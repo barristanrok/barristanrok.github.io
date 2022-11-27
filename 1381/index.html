@@ -3,8 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <title>Estadisticas 1381</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.13.2/themes/black-tie/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+    <script src="../registroInicial.js"></script>
+    <script src="../registroActual.js"></script>
+    <script>
+        var reino = 1381;
+        var campamento = "horus";
+        var progreso_jugadores = []
+        var inciarListaProgreso = function (){
+            let registros_reino_inicial = registros_kvk_inicial.filter(function(registro){
+                return registro.reino == reino;
+            });
+            let registros_reino_actual = registros_kvk_actual.filter(function(registro){
+                return registro.reino == reino;
+            });
+            progreso_jugadores = []
+            registros_reino_inicial.forEach(function (registroInicial){
+                let filtroJugador = registros_reino_actual.filter(function(registro){
+                    return registro.id_jugador == registroInicial.id_jugador;
+                })
+                if(filtroJugador.length == 0){
+                    filtroJugador = registros_reino_actual.filter(function(registro){
+                        return registro.nombre == registroInicial.nombre;
+                    })
+                }
+                let registroActual = registroInicial
+                registroActual.sinInformacion = true
+                if(filtroJugador.length > 0){
+                    registroActual = filtroJugador[0];
+                    registroActual.sinInformacion = false
+                }
+                let progreso = {
+                    "id_jugador": registroInicial.id_jugador,
+                    "nombre": registroInicial.nombre,
+                    "alianza": registroInicial.alianza,
+                    "death1": registroInicial.tropas_muertas,
+                    "death2": registroActual.sinInformacion?"Sin información":registroActual.tropas_muertas,
+                    "dif_death": registroActual.tropas_muertas - registroInicial.tropas_muertas ,
+                    "killPoints1": registroInicial.puntos_muerte,
+                    "killPoints2": registroActual.sinInformacion?"Sin información":registroActual.puntos_muerte,
+                    "dif_killPoints": registroActual.puntos_muerte - registroInicial.puntos_muerte,
+                    "power1": registroInicial.poder,
+                    "power2": registroActual.sinInformacion?"Sin información":registroActual.poder,
+                    "dif_power": registroActual.poder - registroInicial.poder,
+                    "reino": reino,
+                    "campamento": campamento,
+                    "sinInformacion": registroActual.sinInformacion
+                }
+                progreso_jugadores.push(progreso)
+            })
+        }
+        var jugadores =null
+        $(document).ready( function () {
+            inciarListaProgreso();
+            jugadores = progreso_jugadores
+            initPoderes();
+            analizaJugadores();
+            iniciarTabs();
+            var table = $('#tabla-progreso').DataTable({
+                paging: false,
+                data: jugadores,
+                columns: [
+                    { title: 'id', data:'id_jugador' },
+                    { title: 'Nombre', data:'nombre' },
+                    { title: 'Poder Inicial', data:'power1' },
+                   // { title: 'Poder Actual', data:'power2' },
+                    //{ title: 'Progreso Poder', data:'dif_power' },
+                    //{ title: 'Muertos Inicial', data:'death1' },
+                    //{ title: 'Muertos Actual', data:'death2' },
+                    { title: 'Progreso Muertos', data:'dif_death' },
+                    //{ title: 'Kill Points Inicial', data:'killPoints1' },
+                    //{ title: 'Kill Points Actual', data:'killPoints2' },
+                    { title: 'Progreso Kill Points', data:'dif_killPoints' },
+                    { title: 'Rendimiento Kill Points', data:'porcentajeKPDelPromedio' },
+                    { title: 'Rendimiento Muertos', data:'porcentajeMuertosDelPromedio' },
+                    { title: 'Rendimiento General', data:'rendimiento' }
+                ],
+            });
+            $('#tabla-progreso').on('click', 'tr', function () {
+                let id = $(this).find('td').get(0).innerHTML;
+                let jugador = jugadores.filter(function(registro){
+                    return registro.id_jugador == id;
+                })[0]
+                console.log("jugador", jugador)
+                $( "#detalle-nombre" ).html(jugador.nombre)
+                $( "#detalle-poder-inicial" ).html(jugador.power1)
+                $( "#detalle-poder-actual" ).html(jugador.power2)
+                $( "#detalle-progreso-poder" ).html(jugador.dif_power)
+                $( "#detalle-muertos-inicial" ).html(jugador.death1)
+                $( "#detalle-muertos-actual" ).html(jugador.death2)
+                $( "#detalle-progreso-muertos" ).html(jugador.dif_death)
+                $( "#detalle-kp-inicial" ).html(jugador.killPoints1)
+                $( "#detalle-kp-actual" ).html(jugador.killPoints2)
+                $( "#detalle-progreso-kp" ).html(jugador.dif_killPoints)
+                $( "#detalle-poder-recomendado" ).html(jugador.poderRecomendado)
+                $( "#detalle-progreso-kp-esperado" ).html(jugador.estadisticaEsperada.puntosMuertePromedio)
+                $( "#detalle-progreso-muerto-esperado" ).html(jugador.estadisticaEsperada.muertosPromedio)
+                $( "#dialog-message" ).dialog( "open" )
+
+            });
+        } );
+    </script>
+    <script>
+        var factorAumentoMinimo = 1.002;
+        var poderes = []
+        var poderMin = 20;
+        var poderMax = 250;
+        var ponderacionMuertos = 2;
+        var ponderacionKP = 1;
+        var rendimientoMinimoTolerado = -10;
+        var rendimientoMaxAdecuado = 20;
+
+        var sumaPoderesRecomendados = function (){
+            let suma = 0;
+            jugadores.forEach(function (jugador){
+                suma += jugador.poderRecomendado
+            })
+            return suma
+        }
+        var analizaJugadores = function (){
+            jugadores.forEach(function (jugador){
+
+                var estadisticaEsperada = estadisticasEsperadas(jugador);
+                if(estadisticaEsperada === undefined){
+                    console.log("jugador: ",jugador)
+                    console.log("poderes: ",poderes)
+                }
+                var rendimientoObtenido = calculaPorcentajesRendimiento(jugador, estadisticaEsperada);
+                jugador.estadisticaEsperada = estadisticaEsperada
+                jugador.porcentajeMuertosDelPromedio = rendimientoObtenido.porcentajeMuertos;
+                jugador.porcentajeKPDelPromedio = rendimientoObtenido.porcentajeKP;
+                jugador.rendimiento = rendimientoObtenido.rendimiento;
+                jugador.poderRecomendado = buscarPoderRecomendado(jugador)
+            })
+        }
+        var buscarPoderRecomendado = function (jugador){
+            let i = parseInt(jugador.power1/1000000)-poderMin;
+            if(jugador.rendimiento< rendimientoMinimoTolerado){
+                return buscarPoderRecomendadoR(jugador, i-1)
+            }
+            if(jugador.rendimiento>rendimientoMaxAdecuado){
+                return buscarPoderRecomendadoR(jugador, i+1)
+            }
+            return poderes[i].poder
+        }
+        var buscarPoderRecomendadoR = function (jugador, i){
+            let encontrado = false
+            let poder = 0;
+            let iteraciones = 0;
+            do{
+                iteraciones = iteraciones + 1;
+                if(iteraciones>50){
+                    return poderes[i].poder
+                }
+                if(i<0)return poderMin*1000000;
+                if(i>poderMax-poderMin)return poderMax*1000000;
+                var rendiemiento = calculaPorcentajesRendimiento(jugador, poderes[i])
+                if(rendiemiento.rendimiento< rendimientoMinimoTolerado){
+                    i = i - 1
+                }else if(rendiemiento.rendimiento>rendimientoMaxAdecuado){
+                    i = i + 1
+                }else {
+                    poder = poderes[i].poder
+                    encontrado = true
+                }
+            }while (!encontrado)
+
+            return poder
+        }
+        var calculaPorcentajesRendimiento = function (jugador, estadisticaEsperada){
+            let porcentajeMuertos = estadisticaEsperada.muertosPromedio==0?0:((jugador.dif_death/estadisticaEsperada.muertosPromedio)*100 - 100)
+            let porcentajeKP = estadisticaEsperada.puntosMuertePromedio==0?0:((jugador.dif_killPoints/estadisticaEsperada.puntosMuertePromedio)*100 - 100)
+            return {
+                porcentajeMuertos: porcentajeMuertos,
+                porcentajeKP: porcentajeKP,
+                rendimiento: porcentajeKP * ponderacionKP + porcentajeMuertos * ponderacionMuertos
+            }
+        }
+        var estadisticasEsperadas = function (jugador){
+            let i = parseInt(jugador.power1/1000000)-poderMin;
+            return poderes[i]
+        }
+        var initPoderes = function (){
+
+            for (let i = poderMin; i <= poderMax; i++) {
+                poderes[i-poderMin] = {poder:i*1000000, puntosMuertePromedio:0, muertosPromedio:0}
+            }
+            let poderAnterior = {puntosMuertePromedio:0,muertosPromedio:0 };
+            poderes.forEach(function (estadisticasPoder){
+                let estadisticasMinimasPoder = {
+                    poder: estadisticasPoder.poder,
+                    puntosMuertePromedio: poderAnterior.puntosMuertePromedio * factorAumentoMinimo,
+                    muertosPromedio: poderAnterior.muertosPromedio * factorAumentoMinimo
+                }
+                var jugadoresFiltrados = jugadores.filter(function (jugador){
+                    return jugador.power1>estadisticasPoder.poder-5000000 && jugador.power1<estadisticasPoder.poder+5000000 && jugador.dif_death>0
+                })
+                let totalMuertos = 0;
+                let totalKP = 0;
+                jugadoresFiltrados.forEach(function (jugador){
+                    totalKP += jugador.dif_killPoints;
+                    totalMuertos+= jugador.dif_death;
+                })
+                var estPromedio = {
+                    poder: estadisticasPoder.poder,
+                    puntosMuertePromedio:jugadoresFiltrados.length == 0?0:totalKP/jugadoresFiltrados.length,
+                    muertosPromedio:jugadoresFiltrados.length == 0?0:totalMuertos/jugadoresFiltrados.length
+                }
+                var estMayor = estadisticasMasAltasEntre(estPromedio, estadisticasMinimasPoder )
+                estadisticasPoder.puntosMuertePromedio = estMayor.puntosMuertePromedio;
+                estadisticasPoder.muertosPromedio = estMayor.muertosPromedio;
+                poderAnterior = estMayor;
+            })
+        }
+        var estadisticasMasAltasEntre = function (estPoder1, estPoder2){
+            return {
+                puntosMuertePromedio: estPoder1.puntosMuertePromedio>estPoder2.puntosMuertePromedio?estPoder1.puntosMuertePromedio: estPoder2.puntosMuertePromedio,
+                muertosPromedio: estPoder1.muertosPromedio>estPoder2.muertosPromedio?estPoder1.muertosPromedio: estPoder2.muertosPromedio
+            }
+        }
+    </script>
+    <script>
+        var iniciarTabs =  function (){
+            var tabs = $( ".tabs" ).tabs();
+            var previouslyFocused = false;
+
+            tabs.find( ".ui-tabs-nav" ).sortable({
+                axis: "x",
+
+                // Sortable removes focus, so we need to restore it if the tab was focused
+                // prior to sorting
+                start: function(event, ui) {
+                    previouslyFocused = document.activeElement === ui.item[ 0 ];
+                },
+                stop: function(event, ui) {
+                    tabs.tabs( "refresh" );
+                    if (previouslyFocused) {
+                        ui.item.trigger( "focus" );
+                    }
+                }
+            });
+        }
+        $( function() {
+            $( "#dialog-message" ).dialog({
+                autoOpen: false,
+                modal: true,
+                width: 900,
+                buttons: {
+                    Cerrar: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        } );
+    </script>
 </head>
 <body>
-<h1>Estadisticas 1381</h1>
+<h1>Estadisticas 1381, actualizado 26/11/2022</h1>
+<div class = "tabs">
+    <ul>
+        <li><a href="#tabs-informacion">Información</a></li>
+        <li><a href="#tabs-progreso">Progreso</a></li>
+        <li><a href="#tabs-cuadro-honor-general">Cuadro de honor general</a></li>
+        <li><a href="#tabs-cuadro-honor-rendimiento">Cuadro de honor por rendimiento</a></li>
+        <li><a href="#tabs-muro-verguenza">MURO DE LA VERGUENZA!</a></li>
+    </ul>
+    <div id="tabs-informacion">
+        <p>Se calcula el rendimiento en función del poder que tenian en inicio del kvk</p>
+        <p>Para el cálculo del rendimiento se compara su progreso durante este KVK con el de los jugadores que tenian un poder inicial desde 5M menos hasta 5M mas que estedes</p>
+        <p>El progreso de los jugadores con poder cercano se promedia y se estima este como su progreso esperado</p>
+        <p>Este proceso se hace para cada nivel de poder</p>
+        <p>Si el promedio de un nivel resulta igual o menor al nivel inferior, se considerara como progreso esperado el progreso del nivel inferior por un multiplicador.</p>
+        <p>Rendimiento de kill points es el % que esten sobre o bajo el progreso esperado de kill points, es decir si estan 15% arriba, tedran 15, si estan 5% abajo tendran -5</p>
+        <p>Rendimiento de muertos es el % que esten sobre o bajo el progreso esperado de muertos, de la misma forma que los kill points</p>
+        <p>Rendimiento general sera una suma de los rendimientos de muertos y kill points, con una ponderacion mayor para el rendimiento de muertos</p>
+        <p>Tener un rendimiento destacado podria influir positivamente para opra a puestos en futuros eventos</p>
+        <p>Tener un rendimiento muy negativo podria significar que tienen mas poder del que deberian (si por ej tienen numeros aceptables, pero estan muy bajo el promedio que otros jugadores con poder similar) o que realmente son peso muerto en el reino</p>
+        <p>Tener un rendimiento general inferior a -50 (inferior a negativo cincuenta) significara caer al "muro de la verguenza" (seccion que se publicara proximamente) </p>
+        <p>Si estais próximos a caer al "muro de la verguenza" poneros las pilas, ¡no querreis terminar el kvk ahí! </p>
+        <p>Tambien tendremos un cuadro de honor para jugadores destacados :P </p>
+    </div>
+    <div id="tabs-progreso">
+        Puedes clicar en un jugador para ver más información
+        <table id="tabla-progreso" class="display"></table>
+    </div>
+    <div id="tabs-cuadro-honor-general">
+       Proximamente... aqui iran los jugadores con mas tropas muertas y los con mas kill points durante este kvk
+    </div>
+    <div id="tabs-cuadro-honor-rendimiento">
+        Proximamente... aqui iran los jugadores con mayor rendimiento. Ya que se calcula en funcion del poder inicial del kvk, podrian no ser los que tengan mas KP ni muertos, pero si seran los que hayan hecho un mayor esfuerzo para el poder que tienen
+    </div>
+    <div id="tabs-muro-verguenza">
+        Proximamente... aqui iran jugadores con un rendimiento inferior a negativo 50. Estos serian jugadores con un rendimiento muuuy por debajo de lo que se espera de alguien de su poder.
+        Puede que caigan aqui por no poder estar en las primeras peleas. Si es el caso, esfuercence en las siguientes! :P
+    </div>
+</div>
+
+<div id="dialog-message" title="Detalle del Jugador" style="display: none">
+    <p><b>Nombre:</b> <label id="detalle-nombre"></label></p>
+    <p><b>Poder inicial:</b> <label id="detalle-poder-inicial"></label></p>
+    <p><b>Poder actual:</b> <label id="detalle-poder-actual"></label></p>
+    <p><b>Progreso en poder:</b> <label id="detalle-progreso-poder"></label></p>
+    <p><b>Muertos inicial:</b> <label id="detalle-muertos-inicial"></label></p>
+    <p><b>Muertos actual:</b> <label id="detalle-muertos-actual"></label></p>
+    <p><b>Progreso en muertos:</b> <label id="detalle-progreso-muertos"></label></p>
+    <p><b>Puntos de muerte inicial:</b> <label id="detalle-kp-inicial"></label></p>
+    <p><b>Puntos de muerte actual:</b> <label id="detalle-kp-actual"></label></p>
+    <p><b>Progreso en puntos de muerte:</b> <label id="detalle-progreso-kp-esperado"></label></p>
+    <p><b>Progreso de muertos esperado:</b> <label id="detalle-progreso-muerto-esperado"></label></p>
+    <p><b>Progreso de puntos de muetos esperado:</b> <label id="detalle-progreso-kp"></label></p>
+    <p><b>Poder recomendado segun rendimiento actual:</b> <label id="detalle-poder-recomendado"></label></p>
+</div>
+
 </body>
 </html>
