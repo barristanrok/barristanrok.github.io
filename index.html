@@ -19,36 +19,36 @@
     var resumen_reinos_progreso = []
     var registrosMap = {
       1206:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       },
       1381:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       },
       1869:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       },
       1948:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       },
       2026:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       },
       2042:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       },
       2043:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       },
       2139:{
-        inicial:{stats:{}, detalle:[]},
-        actual:{stats:{}, detalle:[]}
+        inicial:{stats:{}, detalle:[], perdidos: []},
+        actual:{stats:{}, detalle:[], nuevos: []}
       }
     }
     var resumir_registros = function(regitros, reino){
@@ -85,22 +85,20 @@
       return valor>=valorMin && valor<valorMax
     }
     function textoPositivoNegativo(valor){
-      return valor>=0?'+'+valor:valor;
+      return valor>=0?'+'+valor.toLocaleString('es-MX'):valor.toLocaleString('es-MX');
     }
-    function calculaProgresoResumen(resumenInicial, resumenActual) {
+    function calculaProgresoResumen(resumenInicial, resumenActual, progreso) {
+      let resumen = progreso.resumen
       return {
         reino: resumenInicial.reino,
         poder: textoPositivoNegativo(resumenActual.poder-resumenInicial.poder),
         muertos: textoPositivoNegativo(resumenActual.muertos-resumenInicial.muertos),
         killPoints: textoPositivoNegativo(resumenActual.killPoints-resumenInicial.killPoints),
-        jugadoresBajo55: textoPositivoNegativo(resumenActual.jugadoresBajo55-resumenInicial.jugadoresBajo55),
-        jugadoresEntre55y75: textoPositivoNegativo(resumenActual.jugadoresEntre55y75-resumenInicial.jugadoresEntre55y75),
-        jugadoresEntre75y100: textoPositivoNegativo(resumenActual.jugadoresEntre75y100-resumenInicial.jugadoresEntre75y100),
-        jugadoresSobre100: textoPositivoNegativo(resumenActual.jugadoresSobre100-resumenInicial.jugadoresSobre100),
-        kpBajo500M: textoPositivoNegativo(resumenActual.kpBajo500M-resumenInicial.kpBajo500M),
-        kpEntre500My1B: textoPositivoNegativo(resumenActual.kpEntre500My1B-resumenInicial.kpEntre500My1B),
-        kpEntre1By2B: textoPositivoNegativo(resumenActual.kpEntre1By2B-resumenInicial.kpEntre1By2B),
-        kpSobre2B: textoPositivoNegativo(resumenActual.kpSobre2B-resumenInicial.kpSobre2B)
+        poderReal: textoPositivoNegativo(resumen.dif_power),
+        muertosReal: textoPositivoNegativo(resumen.dif_death),
+        killPointsReal: textoPositivoNegativo(resumen.dif_killPoints),
+        jugadoresNoActivos: resumen.kpNo0,
+        perdido: resumen.perdido
       };
     }
 
@@ -118,7 +116,8 @@
         let resumenActual = resumir_registros(registros_reino_actual, reino);
         resumen_reinos_inicial.push(resumenInicial)
         resumen_reinos_actual.push(resumenActual)
-        resumen_reinos_progreso.push(calculaProgresoResumen(resumenInicial, resumenActual))
+        inciarListaProgreso(reino)
+        resumen_reinos_progreso.push(calculaProgresoResumen(resumenInicial, resumenActual, registrosMap[reino].progreso))
       })
     }
     var iniciarTablas = function (){
@@ -163,17 +162,13 @@
         data: resumen_reinos_progreso,
         columns: [
           { title: 'Reino', data:'reino' },
-          { title: 'Poder', data:'poder' },
-          { title: 'Muertos', data:'muertos' },
-          { title: 'Puntos de muerte', data:'killPoints' },
-          { title: 'Poder<55M', data:'jugadoresBajo55' },
-          { title: 'Poder 55M-75M', data:'jugadoresEntre55y75' },
-          { title: 'Poder 75M-100M', data:'jugadoresEntre75y100' },
-          { title: 'Poder>100M', data:'jugadoresSobre100' },
-          { title: 'KP<500M', data:'kpBajo500M' },
-          { title: 'KP 500M-1B', data:'kpEntre500My1B' },
-          { title: 'KP 1B-2B', data:'kpEntre1By2B' },
-          { title: 'KP>2B', data:'kpSobre2B' },
+          { title: 'Poder top 300', data:'poder' },
+          { title: 'Muertos top 300', data:'muertos' },
+          { title: 'Puntos de muerte top 300', data:'killPoints' },
+          { title: 'Poder real', data:'poderReal' },
+          { title: 'Muertos real', data:'muertosReal' },
+          { title: 'Puntos de muerte real', data:'killPointsReal' },
+          { title: 'Nuevos en top 300', data:'perdido' }
         ],
       });
       reinos.forEach(function(reino){
@@ -198,7 +193,7 @@
             { title: 'Poder', data:'poder' },
             { title: 'Muertos', data:'tropas_muertas' },
             { title: 'Puntos de muerte', data:'puntos_muerte' },
-            { title: 'fecha', data:'fecha' },
+            { title: 'Fecha', data:'fecha' },
           ],
         });
       })
@@ -252,7 +247,109 @@
       iniciarTabs();
     } );
   </script>
+<script>
+  var inciarListaProgreso = function (reino){
+    var progreso_jugadores = []
+    let resumen_progreso = {
+      dif_death:0,
+      dif_killPoints: 0,
+      dif_power: 0,
+      kp0: 0,
+      kpNo0:0,
+      kp15M:0,
+      kp30M:0,
+      kp100M:0,
+      kp300M:0,
+      kp500M:0,
+      death0: 0,
+      deathNo0:0,
+      death100k:0,
+      death500k:0,
+      death1M:0,
+      death2M:0,
+      death3M:0,
+      perdido: 0
+    }
+    let registros_reino_inicial = registros_kvk_inicial.filter(function(registro){
+      return registro.reino == reino;
+    });
+    let registros_reino_actual = registros_kvk_actual.filter(function(registro){
+      return registro.reino == reino;
+    });
+    registros_reino_actual.forEach(function (registroActual){
+      let filtroJugador = registros_reino_inicial.filter(function(registro){
+        return registro.id_jugador == registroActual.id_jugador;
+      })
+      if(filtroJugador.length == 0){
+        filtroJugador = registros_reino_inicial.filter(function(registro){
+          return registro.nombre == registroActual.nombre;
+        })
+      }
+      if(filtroJugador.length == 0){
+        registroActual.observacion = "Nuevo"
+        registrosMap[reino].actual.nuevos.push(registroActual)
+      }
+    })
+    registros_reino_inicial.forEach(function (registroInicial){
+      let filtroJugador = registros_reino_actual.filter(function(registro){
+        return registro.id_jugador == registroInicial.id_jugador;
+      })
+      if(filtroJugador.length == 0){
+        filtroJugador = registros_reino_actual.filter(function(registro){
+          return registro.nombre == registroInicial.nombre;
+        })
+      }
+      let registroActual = registroInicial
+      registroActual.sinInformacion = true
+      if(filtroJugador.length > 0){
+        registroActual = filtroJugador[0];
+        registroActual.sinInformacion = false
+      }else {
+        registroInicial.observacion = "Perdido"
+        registrosMap[reino].inicial.perdidos.push(registroInicial)
+      }
 
+      let progreso = {
+        "id_jugador": registroInicial.id_jugador,
+        "nombre": registroInicial.nombre,
+        "alianza": registroInicial.alianza,
+        "death1": registroInicial.tropas_muertas,
+        "death2": registroActual.sinInformacion?"Sin información":registroActual.tropas_muertas,
+        "dif_death": registroActual.tropas_muertas - registroInicial.tropas_muertas ,
+        "killPoints1": registroInicial.puntos_muerte,
+        "killPoints2": registroActual.sinInformacion?"Sin información":registroActual.puntos_muerte,
+        "dif_killPoints": registroActual.puntos_muerte - registroInicial.puntos_muerte,
+        "power1": registroInicial.poder,
+        "power2": registroActual.sinInformacion?"Sin información":registroActual.poder,
+        "dif_power": registroActual.poder - registroInicial.poder,
+        "reino": reino,
+        "sinInformacion": registroActual.sinInformacion
+      }
+      resumen_progreso = {
+        dif_death: resumen_progreso.dif_death + progreso.dif_death,
+        dif_killPoints: resumen_progreso.dif_killPoints + progreso.dif_killPoints,
+        dif_power: resumen_progreso.dif_power + progreso.dif_power,
+        kp0: resumen_progreso.kp0 + (progreso.dif_killPoints==0?1:0),
+        kpNo0:resumen_progreso.kpNo0 + (progreso.dif_killPoints>0?1:0),
+        kp15M:resumen_progreso.kp15M + (progreso.dif_killPoints>=15000000?1:0),
+        kp30M:resumen_progreso.kp30M + (progreso.dif_killPoints>=30000000?1:0),
+        kp100M: resumen_progreso.kp100M + (progreso.dif_killPoints>=100000000?1:0),
+        kp300M:resumen_progreso.kp300M + (progreso.dif_killPoints>=300000000?1:0),
+        kp500M:resumen_progreso.kp500M + (progreso.dif_killPoints>=0?1:0),
+        death0: resumen_progreso.death0 + (progreso.dif_death==0?1:0),
+        deathNo0:resumen_progreso.deathNo0 + (progreso.dif_death>0?1:0),
+        death100k:resumen_progreso.death100k + (progreso.dif_death>=100000?1:0),
+        death500k:resumen_progreso.death500k + (progreso.dif_death>=500000?1:0),
+        death1M:resumen_progreso.death1M + (progreso.dif_death>=1000000?1:0),
+        death2M:resumen_progreso.death2M + (progreso.dif_death>=2000000?1:0),
+        death3M:resumen_progreso.death3M + (progreso.dif_death>=3000000?1:0),
+        perdido:resumen_progreso.perdido + (progreso.sinInformacion?1:0)
+      }
+      progreso_jugadores.push(progreso)
+    })
+    registrosMap[reino].progreso = {detalle: progreso_jugadores, resumen: resumen_progreso};
+  }
+</script>
 </head>
 <body>
 
