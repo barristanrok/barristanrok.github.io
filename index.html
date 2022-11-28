@@ -124,6 +124,17 @@
       $('#tabla-resumen-inicial').DataTable({
         paging: false,
         data: resumen_reinos_inicial,
+        columnDefs: [
+          {
+            // The `data` parameter refers to the data for the cell (defined by the
+            // `data` option, which defaults to the column being worked with, in
+            // this case `data: 0`.
+            render: function (data, type, row) {
+              return data.toLocaleString('es-MX');
+            },
+            targets: [1,2,3],
+          },
+        ],
         columns: [
           { title: 'Reino', data:'reino' },
           { title: 'Poder', data:'poder' },
@@ -142,6 +153,17 @@
       $('#tabla-resumen-actual').DataTable({
         paging: false,
         data: resumen_reinos_actual,
+        columnDefs: [
+          {
+            // The `data` parameter refers to the data for the cell (defined by the
+            // `data` option, which defaults to the column being worked with, in
+            // this case `data: 0`.
+            render: function (data, type, row) {
+              return data.toLocaleString('es-MX');
+            },
+            targets: [1,2,3],
+          },
+        ],
         columns: [
           { title: 'Reino', data:'reino' },
           { title: 'Poder', data:'poder' },
@@ -175,6 +197,17 @@
         $('#tabla-detalle-'+reino+'-inicial').DataTable({
           paging: false,
           data: registrosMap[reino].inicial.detalle,
+          columnDefs: [
+            {
+              // The `data` parameter refers to the data for the cell (defined by the
+              // `data` option, which defaults to the column being worked with, in
+              // this case `data: 0`.
+              render: function (data, type, row) {
+                return data.toLocaleString('es-MX');
+              },
+              targets: [2,3,4],
+            },
+          ],
           columns: [
             { title: 'id', data:'id_jugador' },
             { title: 'Nombre', data:'nombre' },
@@ -187,6 +220,17 @@
         $('#tabla-detalle-'+reino+'-actual').DataTable({
           paging: false,
           data: registrosMap[reino].actual.detalle,
+          columnDefs: [
+            {
+              // The `data` parameter refers to the data for the cell (defined by the
+              // `data` option, which defaults to the column being worked with, in
+              // this case `data: 0`.
+              render: function (data, type, row) {
+                return data.toLocaleString('es-MX');
+              },
+              targets: [2,3,4],
+            },
+          ],
           columns: [
             { title: 'id', data:'id_jugador' },
             { title: 'Nombre', data:'nombre' },

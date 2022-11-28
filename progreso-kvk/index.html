@@ -62,6 +62,26 @@
                 paging: false,
                 data: jugadores,
                 order: [[5, 'desc']],
+                columnDefs: [
+                    {
+                        // The `data` parameter refers to the data for the cell (defined by the
+                        // `data` option, which defaults to the column being worked with, in
+                        // this case `data: 0`.
+                        render: function (data, type, row) {
+                            return data.toLocaleString('es-MX');
+                        },
+                        targets: [3,4,5],
+                    },
+                    {
+                        // The `data` parameter refers to the data for the cell (defined by the
+                        // `data` option, which defaults to the column being worked with, in
+                        // this case `data: 0`.
+                        render: function (data, type, row) {
+                            return data.toFixed(0) + "%";
+                        },
+                        targets: [6,7],
+                    },
+                ],
                 columns: [
                     { title: 'id', data:'id_jugador' },
                     { title: 'reino', data:'reino' },
@@ -84,17 +104,16 @@
                 let jugador = jugadores.filter(function(registro){
                     return registro.id_jugador == id;
                 })[0]
-                console.log("jugador", jugador)
                 $( "#detalle-nombre" ).html(jugador.nombre)
-                $( "#detalle-poder-inicial" ).html(jugador.power1)
-                $( "#detalle-poder-actual" ).html(jugador.power2)
-                $( "#detalle-progreso-poder" ).html(jugador.dif_power)
-                $( "#detalle-muertos-inicial" ).html(jugador.death1)
-                $( "#detalle-muertos-actual" ).html(jugador.death2)
-                $( "#detalle-progreso-muertos" ).html(jugador.dif_death)
-                $( "#detalle-kp-inicial" ).html(jugador.killPoints1)
-                $( "#detalle-kp-actual" ).html(jugador.killPoints2)
-                $( "#detalle-progreso-kp" ).html(jugador.dif_killPoints)
+                $( "#detalle-poder-inicial" ).html(jugador.power1.toLocaleString('es-MX'))
+                $( "#detalle-poder-actual" ).html(jugador.power2.toLocaleString('es-MX'))
+                $( "#detalle-progreso-poder" ).html(jugador.dif_power.toLocaleString('es-MX'))
+                $( "#detalle-muertos-inicial" ).html(jugador.death1.toLocaleString('es-MX'))
+                $( "#detalle-muertos-actual" ).html(jugador.death2.toLocaleString('es-MX'))
+                $( "#detalle-progreso-muertos" ).html(jugador.dif_death.toLocaleString('es-MX'))
+                $( "#detalle-kp-inicial" ).html(jugador.killPoints1.toLocaleString('es-MX'))
+                $( "#detalle-kp-actual" ).html(jugador.killPoints2.toLocaleString('es-MX'))
+                $( "#detalle-progreso-kp" ).html(jugador.dif_killPoints.toLocaleString('es-MX'))
                 $( "#dialog-message" ).dialog( "open" )
 
             });
