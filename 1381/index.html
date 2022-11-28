@@ -113,7 +113,7 @@
         var poderes = []
         var poderMin = 20;
         var poderMax = 250;
-        var ponderacionMuertos = 2;
+        var ponderacionMuertos = 0;
         var ponderacionKP = 1;
         var rendimientoMinimoTolerado = -10;
         var rendimientoMaxAdecuado = 20;
@@ -201,7 +201,7 @@
                     muertosPromedio: poderAnterior.muertosPromedio * factorAumentoMinimo
                 }
                 var jugadoresFiltrados = jugadores.filter(function (jugador){
-                    return jugador.power1>estadisticasPoder.poder-5000000 && jugador.power1<estadisticasPoder.poder+5000000 && jugador.dif_death>0
+                    return jugador.power1>estadisticasPoder.poder-5000000 && jugador.power1<estadisticasPoder.poder+5000000 && ((ponderacionMuertos>0&&jugador.dif_death>0) || (ponderacionMuertos==0&&jugador.dif_killPoints>0))
                 })
                 let totalMuertos = 0;
                 let totalKP = 0;
@@ -263,7 +263,7 @@
     </script>
 </head>
 <body>
-<h1>Estadisticas 1381, actualizado 26/11/2022</h1>
+<h1>Estadisticas 1381, actualizado 27/11/2022</h1>
 <div class = "tabs">
     <ul>
         <li><a href="#tabs-informacion">Información</a></li>
@@ -273,14 +273,16 @@
         <li><a href="#tabs-muro-verguenza">MURO DE LA VERGUENZA!</a></li>
     </ul>
     <div id="tabs-informacion">
+        <p><b>Por ahora solo hemos tenido unas ruinas, asi que no den tanta importancia al calculo de rendimiento, cuando se pelee en el paso 6 ahi si cobrará gran importancia. De todas formas les srive de guia para ver que tal van respectoa los compañeros de poder similar</b></p>
         <p>Se calcula el rendimiento en función del poder que tenian en inicio del kvk</p>
+        <p>Un rendimiento cercano a 0 no significa que no hayan hecho nada, sino que significa que han hecho lo que se esperaba de alguien de su poder</p>
         <p>Para el cálculo del rendimiento se compara su progreso durante este KVK con el de los jugadores que tenian un poder inicial desde 5M menos hasta 5M mas que estedes</p>
         <p>El progreso de los jugadores con poder cercano se promedia y se estima este como su progreso esperado</p>
         <p>Este proceso se hace para cada nivel de poder</p>
         <p>Si el promedio de un nivel resulta igual o menor al nivel inferior, se considerara como progreso esperado el progreso del nivel inferior por un multiplicador.</p>
         <p>Rendimiento de kill points es el % que esten sobre o bajo el progreso esperado de kill points, es decir si estan 15% arriba, tedran 15, si estan 5% abajo tendran -5</p>
         <p>Rendimiento de muertos es el % que esten sobre o bajo el progreso esperado de muertos, de la misma forma que los kill points</p>
-        <p>Rendimiento general sera una suma de los rendimientos de muertos y kill points, con una ponderacion mayor para el rendimiento de muertos</p>
+        <p>Rendimiento general sera una suma de los rendimientos de muertos y kill points, con una ponderacion mayor para el rendimiento de muertos. <b>Aunque el rendimiento de muertos sumara 0 al rendimiento general hasta que se pelee en los pasos 6</b></p>
         <p>Tener un rendimiento destacado podria influir positivamente para opra a puestos en futuros eventos</p>
         <p>Tener un rendimiento muy negativo podria significar que tienen mas poder del que deberian (si por ej tienen numeros aceptables, pero estan muy bajo el promedio que otros jugadores con poder similar) o que realmente son peso muerto en el reino</p>
         <p>Tener un rendimiento general inferior a -50 (inferior a negativo cincuenta) significara caer al "muro de la verguenza" (seccion que se publicara proximamente) </p>
@@ -313,9 +315,9 @@
     <p><b>Progreso en muertos:</b> <label id="detalle-progreso-muertos"></label></p>
     <p><b>Puntos de muerte inicial:</b> <label id="detalle-kp-inicial"></label></p>
     <p><b>Puntos de muerte actual:</b> <label id="detalle-kp-actual"></label></p>
-    <p><b>Progreso en puntos de muerte:</b> <label id="detalle-progreso-kp-esperado"></label></p>
+    <p><b>Progreso en puntos de muerte:</b> <label id="detalle-progreso-kp"></label></p>
     <p><b>Progreso de muertos esperado:</b> <label id="detalle-progreso-muerto-esperado"></label></p>
-    <p><b>Progreso de puntos de muetos esperado:</b> <label id="detalle-progreso-kp"></label></p>
+    <p><b>Progreso de puntos de muetos esperado:</b> <label id="detalle-progreso-kp-esperado"></label></p>
     <p><b>Poder recomendado segun rendimiento actual:</b> <label id="detalle-poder-recomendado"></label></p>
 </div>
 
