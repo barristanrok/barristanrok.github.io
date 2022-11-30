@@ -11,7 +11,11 @@
   <!--    registros_kvk_inicial-->
   <script src="registroInicial.js"></script>
   <script src="registroActual.js"></script>
-
+  <style>
+    .warningcolumn {
+      background-color: #77ff00;
+    }
+  </style>
   <script>
     var reinos = [1206,1381,1869,1948,2026,2042,2043,2139]
     var resumen_reinos_inicial = []
@@ -228,6 +232,10 @@
       $('#tabla-resumen-progreso').DataTable({
         paging: false,
         data: resumen_reinos_progreso,
+        rowCallback: function( row, data ) {
+          $('td', row).eq(0).addClass('warningcolumn');
+          $('td', row).eq(6).addClass('warningcolumn');
+        },
         columns: [
           { title: 'Reino', data:'reino' },
           { title: 'Poder top 300', data:'poder' },
@@ -473,6 +481,7 @@
 <body>
 
 <h1>Resumenes</h1>
+<a href="/progreso-kvk">Ver ranking de kvk</a><br></br>
 <div class = "tabs">
   <ul>
     <li><a href="#tabs-resumen-inicial">Resumen inicial</a></li>
