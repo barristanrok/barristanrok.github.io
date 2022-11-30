@@ -17,6 +17,8 @@
     var resumen_reinos_inicial = []
     var resumen_reinos_actual = []
     var resumen_reinos_progreso = []
+    var tabla_entran;
+    var tabla_salen;
     var registrosMap = {
       1206:{
         inicial:{stats:{}, detalle:[], perdidos: []},
@@ -121,6 +123,50 @@
       })
     }
     var iniciarTablas = function (){
+      tabla_entran = $('#tabla-jugadores-entran').DataTable({
+        autoWidth:false,
+        lengthChange: false,
+        pageLength: 3,
+        paging: true,
+        data:  [],
+        columnDefs: [
+          {
+            render: function (data, type, row) {
+              return data.toLocaleString('es-MX');
+            },
+            targets: [2,3,4],
+          },
+        ],
+        columns: [
+          { title: 'id', data:'id_jugador' },
+          { title: 'Nombre', data:'nombre' },
+          { title: 'Poder', data:'poder' },
+          { title: 'Muertos', data:'tropas_muertas' },
+          { title: 'Puntos de muerte', data:'puntos_muerte' }
+        ],
+      });
+      tabla_salen= $('#tabla-jugadores-salen').DataTable({
+        autoWidth:false,
+        lengthChange: false,
+        pageLength: 3,
+        paging: true,
+        data: [],
+        columnDefs: [
+          {
+            render: function (data, type, row) {
+              return data.toLocaleString('es-MX');
+            },
+            targets: [2,3,4],
+          },
+        ],
+        columns: [
+          { title: 'id', data:'id_jugador' },
+          { title: 'Nombre', data:'nombre' },
+          { title: 'Poder', data:'poder' },
+          { title: 'Muertos', data:'tropas_muertas' },
+          { title: 'Puntos de muerte', data:'puntos_muerte' }
+        ],
+      });
       $('#tabla-resumen-inicial').DataTable({
         paging: false,
         data: resumen_reinos_inicial,
@@ -289,6 +335,20 @@
       crearHtmlTabsDetalle();
       iniciarTablas();
       iniciarTabs();
+      $('#tabla-resumen-progreso').on('click', 'tr', function () {
+        let reino = $(this).find('td').get(0).innerHTML;
+        let jugadores_entran = registrosMap[reino].actual.nuevos
+        let jugadores_salen = registrosMap[reino].inicial.perdidos
+        tabla_entran.clear();
+        tabla_entran.rows.add(jugadores_entran);
+        tabla_entran.draw();
+        tabla_salen.clear();
+        tabla_salen.rows.add(jugadores_salen);
+        tabla_salen.draw();
+
+        $( "#dialog-jugadores-in-out" ).dialog( "open" )
+
+      });
     } );
   </script>
 <script>
@@ -394,6 +454,21 @@
     registrosMap[reino].progreso = {detalle: progreso_jugadores, resumen: resumen_progreso};
   }
 </script>
+  <script>
+
+    $( function() {
+      $( "#dialog-jugadores-in-out" ).dialog({
+        autoOpen: false,
+        modal: true,
+        width: 900,
+        buttons: {
+          Cerrar: function() {
+            $( this ).dialog( "close" );
+          }
+        }
+      });
+    } );
+  </script>
 </head>
 <body>
 
@@ -419,6 +494,12 @@
   <ul id="lista-reinos">
   </ul>
 
+</div>
+<div id="dialog-jugadores-in-out" style="display: none" title="Jugadores que entran y salen del top 300">
+  <p>Entran al top 300:  </p>
+<table id="tabla-jugadores-entran" class="display" ></table>
+  <p> Salen del top 300: </p>
+<table id="tabla-jugadores-salen" class="display"></table>
 </div>
 </body>
 </html>
