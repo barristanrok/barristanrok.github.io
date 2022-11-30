@@ -80,10 +80,10 @@
         count.jugadoresEntre55y75+=verificaIntervalo(55000000, 75000000,registro.poder)?1:0;
         count.jugadoresEntre75y100+=verificaIntervalo(75000000, 100000000, registro.poder)?1:0;
         count.jugadoresSobre100+=registro.poder>100000000?1:0;
-        count.kpBajo500M+=registro.puntos_muerte<55000000?1:0;
-        count.kpEntre500My1B+=verificaIntervalo(55000000, 75000000, registro.puntos_muerte)?1:0;
-        count.kpEntre1By2B+=verificaIntervalo(75000000, 100000000, registro.puntos_muerte)?1:0;
-        count.kpSobre2B+=registro.puntos_muerte>100000000?1:0;
+        count.kpBajo500M+=registro.puntos_muerte<500000000?1:0;
+        count.kpEntre500My1B+=verificaIntervalo(500000000, 1000000000, registro.puntos_muerte)?1:0;
+        count.kpEntre1By2B+=verificaIntervalo(1000000000, 2000000000, registro.puntos_muerte)?1:0;
+        count.kpSobre2B+=registro.puntos_muerte>2000000000?1:0;
       })
       return count;
     }
