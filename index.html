@@ -15,6 +15,12 @@
     .warningcolumn {
       background-color: #77ff00;
     }
+    .horus {
+      background-color: #00fff7;
+    }
+    .seth {
+      background-color: #ff003b;
+    }
   </style>
   <script>
     var reinos = [1206,1381,1869,1948,2026,2042,2043,2139]
@@ -26,35 +32,44 @@
     var registrosMap = {
       1206:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'horus'
+
       },
       1381:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'horus'
       },
       1869:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'seth'
       },
       1948:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'seth'
       },
       2026:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'horus'
       },
       2042:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'seth'
       },
       2043:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'seth'
       },
       2139:{
         inicial:{stats:{}, detalle:[], perdidos: []},
-        actual:{stats:{}, detalle:[], nuevos: []}
+        actual:{stats:{}, detalle:[], nuevos: []},
+        campamento: 'horus'
       }
     }
     var resumir_registros = function(regitros, reino){
@@ -233,7 +248,7 @@
         paging: false,
         data: resumen_reinos_progreso,
         rowCallback: function( row, data ) {
-          $('td', row).eq(0).addClass('warningcolumn');
+          $('td', row).eq(0).addClass(registrosMap[data.reino].campamento);
           $('td', row).eq(6).addClass('warningcolumn');
         },
         columns: [
@@ -481,7 +496,7 @@
 <body>
 
 <h1>Resumenes</h1>
-<p>actualizado 03/12/2022 (seth sigue con datos del 01/12)</p>
+<p>actualizado 04/12/2022 </p>
 <a href="/progreso-kvk">Ver ranking de kvk</a><br></br>
 <div class = "tabs">
   <ul>

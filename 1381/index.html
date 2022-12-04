@@ -12,6 +12,10 @@
     <script src="../registroActual.js"></script>
     <script>
         var reino = 1381;
+        var cereados = {
+            57187672: true,
+            65460502: true
+        }
         var campamento = "horus";
         var progreso_jugadores = []
         var inciarListaProgreso = function (){
@@ -133,7 +137,7 @@
         var poderes = []
         var poderMin = 20;
         var poderMax = 250;
-        var ponderacionMuertos = 0;
+        var ponderacionMuertos = 1.5;
         var ponderacionKP = 1;
         var rendimientoMinimoTolerado = -10;
         var rendimientoMaxAdecuado = 20;
@@ -198,6 +202,9 @@
         var calculaPorcentajesRendimiento = function (jugador, estadisticaEsperada){
             let porcentajeMuertos = estadisticaEsperada.muertosPromedio==0?0:((jugador.dif_death/estadisticaEsperada.muertosPromedio)*100 - 100)
             let porcentajeKP = estadisticaEsperada.puntosMuertePromedio==0?0:((jugador.dif_killPoints/estadisticaEsperada.puntosMuertePromedio)*100 - 100)
+            if(cereados[jugador.id_jugador]==true){
+                porcentajeMuertos = 0
+            }
             return {
                 porcentajeMuertos: porcentajeMuertos,
                 porcentajeKP: porcentajeKP,
@@ -221,7 +228,7 @@
                     muertosPromedio: poderAnterior.muertosPromedio * factorAumentoMinimo
                 }
                 var jugadoresFiltrados = jugadores.filter(function (jugador){
-                    return jugador.power1>estadisticasPoder.poder-5000000 && jugador.power1<estadisticasPoder.poder+5000000 && ((ponderacionMuertos>0&&jugador.dif_death>0) || (ponderacionMuertos==0&&jugador.dif_killPoints>0))
+                    return cereados[jugador.id_jugador]!=true && jugador.power1>(estadisticasPoder.poder-5000000) && jugador.power1<(estadisticasPoder.poder+5000000) && ((ponderacionMuertos>0&&jugador.dif_death>0) || (ponderacionMuertos==0&&jugador.dif_killPoints>0))
                 })
                 let totalMuertos = 0;
                 let totalKP = 0;
@@ -283,7 +290,7 @@
     </script>
 </head>
 <body>
-<h1>Estadisticas 1381, actualizado 03/12/2022 </h1>
+<h1>Estadisticas 1381, actualizado 04/12/2022 </h1>
 <div class = "tabs">
     <ul>
         <li><a href="#tabs-informacion">Información</a></li>
