@@ -276,7 +276,13 @@
                         render: function (data, type, row) {
                             return data.toFixed(0)+ "%";
                         },
-                        targets: [7,8,9],
+                        targets: [7,8],
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.toFixed(0);
+                        },
+                        targets: [9],
                     },
                 ],
                 columns: [
