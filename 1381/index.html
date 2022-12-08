@@ -18,6 +18,32 @@
         }
         var campamento = "horus";
         var progreso_jugadores = []
+        var candidatosHonor = []
+        var candidatosHonorMuertos = []
+        var candidatosHonorKP = []
+        var candidatosHonorKPrend = []
+        var candidatosHonorMuertosrend = []
+        var candidatosVerguenza = []
+        var calculoHonor=function(){
+            candidatosHonor =  progreso_jugadores.filter(function(registro){
+                return cereados[registro.id_jugador] != true;
+            });
+            candidatosHonorMuertos = copiaN(candidatosHonor.sort(function(a, b){return b.dif_death-a.dif_death}),5)
+            candidatosHonorKP = copiaN(candidatosHonor.sort(function(a, b){return b.dif_killPoints-a.dif_killPoints}),5)
+            candidatosHonorKPrend = copiaN(candidatosHonor.sort(function(a, b){return b.porcentajeKPDelPromedio-a.porcentajeKPDelPromedio}),5)
+            candidatosHonorMuertosrend = copiaN(candidatosHonor.sort(function(a, b){return b.porcentajeMuertosDelPromedio-a.porcentajeMuertosDelPromedio}),5)
+            candidatosVerguenza = progreso_jugadores.filter(function(registro){
+                return registro.rendimiento <-50 && registro.power1>50000000 && registro.power2 != 'Sin información' && registro.power2>registro.poderRecomendado;
+            });
+
+        }
+        var copiaN = function (lista, n){
+            let resp = []
+           for (let i = 0; i<n;i++){
+               resp.push(lista[i])
+           }
+            return resp;
+        }
         var inciarListaProgreso = function (){
             let registros_reino_inicial = registros_kvk_inicial.filter(function(registro){
                 return registro.reino == reino;
@@ -68,24 +94,19 @@
             initPoderes();
             analizaJugadores();
             iniciarTabs();
+            calculoHonor();
             var table = $('#tabla-progreso').DataTable({
                 paging: false,
                 data: jugadores,
                 order: [[4, 'desc']],
                 columnDefs: [
                     {
-                        // The `data` parameter refers to the data for the cell (defined by the
-                        // `data` option, which defaults to the column being worked with, in
-                        // this case `data: 0`.
                         render: function (data, type, row) {
                             return data.toLocaleString('es-MX');
                         },
                         targets: [2,3,4],
                     },
                     {
-                        // The `data` parameter refers to the data for the cell (defined by the
-                        // `data` option, which defaults to the column being worked with, in
-                        // this case `data: 0`.
                         render: function (data, type, row) {
                             return data.toFixed(0)+ "%";
                         },
@@ -96,13 +117,7 @@
                     { title: 'id', data:'id_jugador' },
                     { title: 'Nombre', data:'nombre' },
                     { title: 'Poder Inicial', data:'power1' },
-                   // { title: 'Poder Actual', data:'power2' },
-                    //{ title: 'Progreso Poder', data:'dif_power' },
-                    //{ title: 'Muertos Inicial', data:'death1' },
-                    //{ title: 'Muertos Actual', data:'death2' },
                     { title: 'Progreso Muertos', data:'dif_death' },
-                    //{ title: 'Kill Points Inicial', data:'killPoints1' },
-                    //{ title: 'Kill Points Actual', data:'killPoints2' },
                     { title: 'Progreso Kill Points', data:'dif_killPoints' },
                     { title: 'Rendimiento Kill Points', data:'porcentajeKPDelPromedio' },
                     { title: 'Rendimiento Muertos', data:'porcentajeMuertosDelPromedio' },
@@ -129,6 +144,153 @@
                 $( "#detalle-progreso-muerto-esperado" ).html(parseInt(jugador.estadisticaEsperada.muertosPromedio).toLocaleString('es-MX'))
                 $( "#dialog-message" ).dialog( "open" )
 
+            });
+            $('#tabla-honor-muertos-g').DataTable({
+                paging: false,
+                data: candidatosHonorMuertos,
+                order: [[3, 'desc']],
+                columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return data.toLocaleString('es-MX');
+                        },
+                        targets: [2,3,4],
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.toFixed(0)+ "%";
+                        },
+                        targets: [5,6,7],
+                    },
+                ],
+                columns: [
+                    { title: 'id', data:'id_jugador' },
+                    { title: 'Nombre', data:'nombre' },
+                    { title: 'Poder Inicial', data:'power1' },
+                    { title: 'Progreso Muertos', data:'dif_death' },
+                    { title: 'Progreso Kill Points', data:'dif_killPoints' },
+                    { title: 'Rendimiento Kill Points', data:'porcentajeKPDelPromedio' },
+                    { title: 'Rendimiento Muertos', data:'porcentajeMuertosDelPromedio' },
+                    { title: 'Rendimiento General', data:'rendimiento' }
+                ],
+            });
+            $('#tabla-honor-kp-g').DataTable({
+                paging: false,
+                data: candidatosHonorKP,
+                order: [[4, 'desc']],
+                columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return data.toLocaleString('es-MX');
+                        },
+                        targets: [2,3,4],
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.toFixed(0)+ "%";
+                        },
+                        targets: [5,6,7],
+                    },
+                ],
+                columns: [
+                    { title: 'id', data:'id_jugador' },
+                    { title: 'Nombre', data:'nombre' },
+                    { title: 'Poder Inicial', data:'power1' },
+                    { title: 'Progreso Muertos', data:'dif_death' },
+                    { title: 'Progreso Kill Points', data:'dif_killPoints' },
+                    { title: 'Rendimiento Kill Points', data:'porcentajeKPDelPromedio' },
+                    { title: 'Rendimiento Muertos', data:'porcentajeMuertosDelPromedio' },
+                    { title: 'Rendimiento General', data:'rendimiento' }
+                ],
+            });
+            $('#tabla-honor-muertos-r').DataTable({
+                paging: false,
+                data: candidatosHonorMuertosrend,
+                order: [[6, 'desc']],
+                columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return data.toLocaleString('es-MX');
+                        },
+                        targets: [2,3,4],
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.toFixed(0)+ "%";
+                        },
+                        targets: [5,6,7],
+                    },
+                ],
+                columns: [
+                    { title: 'id', data:'id_jugador' },
+                    { title: 'Nombre', data:'nombre' },
+                    { title: 'Poder Inicial', data:'power1' },
+                    { title: 'Progreso Muertos', data:'dif_death' },
+                    { title: 'Progreso Kill Points', data:'dif_killPoints' },
+                    { title: 'Rendimiento Kill Points', data:'porcentajeKPDelPromedio' },
+                    { title: 'Rendimiento Muertos', data:'porcentajeMuertosDelPromedio' },
+                    { title: 'Rendimiento General', data:'rendimiento' }
+                ],
+            });
+            $('#tabla-honor-kp-r').DataTable({
+                paging: false,
+                data: candidatosHonorKPrend,
+                order: [[5, 'desc']],
+                columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return data.toLocaleString('es-MX');
+                        },
+                        targets: [2,3,4],
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.toFixed(0)+ "%";
+                        },
+                        targets: [5,6,7],
+                    },
+                ],
+                columns: [
+                    { title: 'id', data:'id_jugador' },
+                    { title: 'Nombre', data:'nombre' },
+                    { title: 'Poder Inicial', data:'power1' },
+                    { title: 'Progreso Muertos', data:'dif_death' },
+                    { title: 'Progreso Kill Points', data:'dif_killPoints' },
+                    { title: 'Rendimiento Kill Points', data:'porcentajeKPDelPromedio' },
+                    { title: 'Rendimiento Muertos', data:'porcentajeMuertosDelPromedio' },
+                    { title: 'Rendimiento General', data:'rendimiento' }
+                ],
+            });
+            $('#tabla-verguenza').DataTable({
+                paging: false,
+                data: candidatosVerguenza,
+                order: [[2, 'desc']],
+                columnDefs: [
+                    {
+                        render: function (data, type, row) {
+                            return data.toLocaleString('es-MX');
+                        },
+                        targets: [2,3,4,5,6],
+                    },
+                    {
+                        render: function (data, type, row) {
+                            return data.toFixed(0)+ "%";
+                        },
+                        targets: [7,8,9],
+                    },
+                ],
+                columns: [
+                    { title: 'id', data:'id_jugador' },
+                    { title: 'Nombre', data:'nombre' },
+                    { title: 'Poder Inicial', data:'power1' },
+                    { title: 'Poder Actual', data:'power2' },
+                    { title: 'Poder Recomendado', data:'poderRecomendado' },
+                    { title: 'Progreso Muertos', data:'dif_death' },
+                    { title: 'Progreso Kill Points', data:'dif_killPoints' },
+                    { title: 'Rendimiento Kill Points', data:'porcentajeKPDelPromedio' },
+                    { title: 'Rendimiento Muertos', data:'porcentajeMuertosDelPromedio' },
+                    { title: 'Rendimiento General', data:'rendimiento' }
+                ],
             });
         } );
     </script>
@@ -181,7 +343,10 @@
             let iteraciones = 0;
             do{
                 iteraciones = iteraciones + 1;
+                if(i==-1)return poderes[0].poder
+                if(i==poderes.length)return poderes[poderes.length-1].poder
                 if(iteraciones>50){
+                    console.log("jugador it 50",i,jugador)
                     return poderes[i].poder
                 }
                 if(i<0)return poderMin*1000000;
@@ -227,9 +392,20 @@
                     puntosMuertePromedio: poderAnterior.puntosMuertePromedio * factorAumentoMinimo,
                     muertosPromedio: poderAnterior.muertosPromedio * factorAumentoMinimo
                 }
-                var jugadoresFiltrados = jugadores.filter(function (jugador){
-                    return cereados[jugador.id_jugador]!=true && jugador.power1>(estadisticasPoder.poder-5000000) && jugador.power1<(estadisticasPoder.poder+5000000) && ((ponderacionMuertos>0&&jugador.dif_death>0) || (ponderacionMuertos==0&&jugador.dif_killPoints>0))
-                })
+                var rangoBase = 5000000;
+                var jugaMin = 10;
+                var jugadoresFiltrados = []
+                let count = 0;
+                do {
+                    count++;
+                    jugadoresFiltrados = jugadores.filter(function (jugador) {
+                        return cereados[jugador.id_jugador] != true && jugador.power1 > (estadisticasPoder.poder - count*rangoBase) && jugador.power1 < (estadisticasPoder.poder + count*rangoBase) && ((ponderacionMuertos > 0 && jugador.dif_death > 0) || (ponderacionMuertos == 0 && jugador.dif_killPoints > 0))
+                    })
+                    if(count>1) {
+                        console.log("count", count)
+                        console.log("length",jugadoresFiltrados.length)
+                    }
+                }while (jugadoresFiltrados.length<jugaMin && count<5)
                 let totalMuertos = 0;
                 let totalKP = 0;
                 jugadoresFiltrados.forEach(function (jugador){
@@ -290,7 +466,7 @@
     </script>
 </head>
 <body>
-<h1>Estadisticas 1381, actualizado 05/12/2022 </h1>
+<h1>Estadisticas 1381, actualizado 08/12/2022 </h1>
 <div class = "tabs">
     <ul>
         <li><a href="#tabs-informacion">Información</a></li>
@@ -321,14 +497,25 @@
         <table id="tabla-progreso" class="display"></table>
     </div>
     <div id="tabs-cuadro-honor-general">
-       Proximamente... aqui iran los jugadores con mas tropas muertas y los con mas kill points durante este kvk
+        <p>Si tiene información que indique que alguno del top ha subido porque lo cerearon o ha hecho puntos de formas "no legales", informar a algun R4, de preferencia a barristan</p>
+        <p>Top 5 en tropas muertas</p>
+        <table id="tabla-honor-muertos-g" class="display"></table>
+        <p>Top 5 en puntos de muerte</p>
+        <table id="tabla-honor-kp-g" class="display"></table>
     </div>
     <div id="tabs-cuadro-honor-rendimiento">
-        Proximamente... aqui iran los jugadores con mayor rendimiento. Ya que se calcula en funcion del poder inicial del kvk, podrian no ser los que tengan mas KP ni muertos, pero si seran los que hayan hecho un mayor esfuerzo para el poder que tienen
+        <p>Si tiene información que indique que alguno del top ha subido porque lo cerearon o ha hecho puntos de formas "no legales", informar a algun R4, de preferencia a barristan</p>
+        <p>Top 5 en rendimiento de tropas muertas (lo que han hecho comparado con jugadores de poder similar)</p>
+        <table id="tabla-honor-muertos-r" class="display"></table>
+        <p>Top 5 en rendimiento puntos de muerte (lo que han hecho comparado con jugadores de poder similar)</p>
+        <table id="tabla-honor-kp-r" class="display"></table>
     </div>
     <div id="tabs-muro-verguenza">
-        Proximamente... aqui iran jugadores con un rendimiento inferior a negativo 50. Estos serian jugadores con un rendimiento muuuy por debajo de lo que se espera de alguien de su poder.
-        Puede que caigan aqui por no poder estar en las primeras peleas. Si es el caso, esfuercence en las siguientes! :P
+        <p>Aun queda KvK, si estas aqui no te desanimes y ponle ganas, a todos nos pueden tocar unos cuantos malos horarios para la guerra <b>quedan muchas instancias para remontar!!</b></p>
+        <p>Igualmente, si no estas aca, no relajarse, que aun queda KvK, seguir esforzandose para no estar aca!</p>
+        <p>Aapareceran aqui quienes tengan un rendimiento general inferior a -50, poder superior a 50M y su poder actual sea superior al recomendado</p>
+        <p>Poder recomendado es el poder con el cual su rendimiento seria considerado "normal", si mejoran su rendimiento tambien aumentara su poder recomendado</p>
+        <table id="tabla-verguenza" class="display"></table>
     </div>
 </div>
 
