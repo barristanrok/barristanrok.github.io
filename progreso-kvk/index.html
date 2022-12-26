@@ -9,9 +9,15 @@
     <title>Estadisticas 1381</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css">
     <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.13.2/themes/black-tie/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.1.0/css/searchPanes.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.5.0/css/select.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchbuilder/1.4.0/css/searchBuilder.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/searchpanes/2.1.0/js/dataTables.searchPanes.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/select/1.5.0/js/dataTables.select.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/searchbuilder/1.4.0/js/dataTables.searchBuilder.min.js"></script>
     <script src="../registroInicial.js?v=1"></script>
     <script src="../registroActual.js?v=5"></script>
     <script>
@@ -63,14 +69,34 @@
             initPoderes();
             analizaJugadores();
             var table = $('#tabla-progreso').DataTable({
+                dom: 'Qlfrtip',
+                language: {
+                    searchBuilder: {
+                        add: 'Agregar filtro',
+                        condition: 'Condición',
+                        clearAll: 'Quitar todo',
+                        delete: 'Quitar',
+                        deleteTitle: 'Quitar',
+                        data: 'Columna',
+                        left: '<-',
+                        leftTitle: 'Quitar anidación',
+                        logicAnd: 'AND',
+                        logicOr: 'OR',
+                        right: '->',
+                        rightTitle: 'Anidar',
+                        title: {
+                            0: 'Fitros',
+                            _: 'Fitros (%d)'
+                        },
+                        value: 'Valor',
+                        valueJoiner: 'y'
+                    }
+                },
                 paging: false,
                 data: jugadores,
                 order: [[5, 'desc']],
                 columnDefs: [
                     {
-                        // The `data` parameter refers to the data for the cell (defined by the
-                        // `data` option, which defaults to the column being worked with, in
-                        // this case `data: 0`.
                         render: function (data, type, row) {
                             return data.toLocaleString('es-MX');
                         },
